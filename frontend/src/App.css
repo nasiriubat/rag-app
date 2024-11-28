@@ -157,7 +157,7 @@ body {
   background-color: #ffffff;
   border-radius: 15px;
   padding: 20px;
-  height: 72vh;
+  height: min(70vh, 70dvh) !important;
 
   display: flex;
   flex-direction: column;

@@ -479,6 +479,9 @@ body {
 }
 
 @media (max-width: 425px) {
+  #main-content{
+    height:95vh ;
+  }
   #sidebar h4 {
     font-size: 1.1rem;
   }

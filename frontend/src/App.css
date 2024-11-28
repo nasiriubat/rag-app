@@ -9,7 +9,8 @@ body {
 
 .main {
   display: flex;
-  height: 100%;
+  align-items: center;
+  /* height: 100%; */
   width: 100%;
   margin: 0;
   padding: 0;
@@ -494,6 +495,7 @@ body {
 
   .modal-content {
     width: 85%;
+    height: 90vh;
   }
   .right-footer{
     padding: .5rem;
@@ -503,16 +505,6 @@ body {
   .right-footer p {
     font-size: 1rem;
   }
-
-  .chatbox{
-    height: 80% !important;
-  }
-  .top-bar{
-    height: 10%;
-  }
-  /* .right-footer{
-    height: 10% !important;
-  } */
 }
 
 @media (max-width: 375px) {

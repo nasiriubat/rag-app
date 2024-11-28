@@ -118,7 +118,7 @@ body {
 
 /* Main Content */
 #main-content {
-  height: 100% !important;
+  height: 100vh !important;
   width: 100%;
 
 
@@ -479,7 +479,6 @@ body {
 }
 
 @media (max-width: 425px) {
- 
   #sidebar h4 {
     font-size: 1.1rem;
   }
@@ -507,7 +506,7 @@ body {
 @media (max-width: 375px) {
  
   .top-bar a {
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
   
 }

@@ -1,0 +1,35 @@
+name: Build Frontend on tuni-data Branch
+
+on:
+  push:
+    branches:
+      - tuni-data
+  pull_request:
+    branches:
+      - tuni-data
+
+jobs:
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Use the Node.js version your project requires
+
+      # Install dependencies
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      # Run the build command
+      - name: Run Build
+        working-directory: ./frontend
+        run: npm run build

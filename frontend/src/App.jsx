@@ -83,8 +83,10 @@ function App() {
           toggleSidebar={toggleSidebar}
         />
         <div id="main-content">
+        <div className="">
           <TopBar openModal={openModal} toggleSidebar={toggleSidebar} />
           <Chatbox messages={messages} setMessages={setMessages} api_url={api_url} input={input} setInput={setInput} handleSendMessage={handleSendMessage} loading={loading} />
+        </div>
           <div className="right-footer">
             <p>GPT Lab &copy; 2024</p>
           </div>

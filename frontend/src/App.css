@@ -162,7 +162,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  margin: 0rem 3rem 1rem 3rem;
+  margin: 1.5rem 3rem 1rem 3rem;
 }
 
 .chat-area {
@@ -461,9 +461,7 @@ body {
     margin: 0rem 1rem;
     padding: 10px ;
   }
-  .main-content {
-   height: 90%;
-  }
+  
 
   .modal-content {
     width: 80%;
@@ -509,7 +507,7 @@ body {
 @media (max-width: 375px) {
  
   .top-bar a {
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
   
 }

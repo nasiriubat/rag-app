@@ -460,6 +460,7 @@ body {
   .chatbox {
     margin: 0rem 1rem;
     padding: 10px ;
+    height: 70vh;
   }
 
   .modal-content {

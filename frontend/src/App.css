@@ -118,7 +118,7 @@ body {
 
 /* Main Content */
 #main-content {
-  height: 100vh !important;
+  height: 100% !important;
   width: 100%;
 
 
@@ -479,9 +479,7 @@ body {
 }
 
 @media (max-width: 425px) {
-  .main{
-    height: fit-content;
-  }
+ 
   #sidebar h4 {
     font-size: 1.1rem;
   }

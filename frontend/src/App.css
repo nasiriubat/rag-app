@@ -9,8 +9,7 @@ body {
 
 .main {
   display: flex;
-  align-items: center;
-  /* height: 100%; */
+  height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -121,6 +120,9 @@ body {
 #main-content {
   height: 100vh !important;
   width: 100%;
+
+
+
 }
 
 /* top bar */
@@ -460,11 +462,6 @@ body {
     padding: 10px ;
   }
 
-  .main-content {
-    height: 100vh;
-  }
-  
-
   .modal-content {
     width: 80%;
   }
@@ -482,6 +479,9 @@ body {
 }
 
 @media (max-width: 425px) {
+  .main{
+    height: fit-content;
+  }
   #sidebar h4 {
     font-size: 1.1rem;
   }
@@ -495,7 +495,6 @@ body {
 
   .modal-content {
     width: 85%;
-    height: 90vh;
   }
   .right-footer{
     padding: .5rem;
@@ -510,7 +509,7 @@ body {
 @media (max-width: 375px) {
  
   .top-bar a {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
   
 }

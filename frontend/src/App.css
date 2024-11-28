@@ -120,9 +120,6 @@ body {
 #main-content {
   height: 100vh !important;
   width: 100%;
-
-
-
 }
 
 /* top bar */
@@ -162,7 +159,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  margin: 1.5rem 3rem 1rem 3rem;
+  margin: 0rem 3rem 1rem 3rem;
 }
 
 .chat-area {
@@ -461,6 +458,10 @@ body {
     margin: 0rem 1rem;
     padding: 10px ;
   }
+
+  .main-content {
+    height: 100vh;
+  }
   
 
   .modal-content {
@@ -502,6 +503,16 @@ body {
   .right-footer p {
     font-size: 1rem;
   }
+
+  .chatbox{
+    height: 80% !important;
+  }
+  .top-bar{
+    height: 10%;
+  }
+  /* .right-footer{
+    height: 10% !important;
+  } */
 }
 
 @media (max-width: 375px) {

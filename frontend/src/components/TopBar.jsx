@@ -1,18 +1,26 @@
-import React from 'react';
-import { FaInfoCircle } from 'react-icons/fa';  
-import { FaBars } from 'react-icons/fa';  // Using React Icons
+import React, { useContext } from "react";
+import { FaInfoCircle, FaBars } from "react-icons/fa";
+import { LanguageContext } from "../context/Language";
 
+function TopBar({ openModal, toggleSidebar }) {
+  const { language, toggleLanguage } = useContext(LanguageContext);
 
-function TopBar({openModal,toggleSidebar}) {
   return (
     <div className="top-bar mb-2">
-      <button id="menu-toggle" onClick={toggleSidebar}  className="hamburger">
-        <FaBars /> 
+      <button id="menu-toggle" onClick={toggleSidebar} className="hamburger">
+        <FaBars />
       </button>
-      <a href="https://www.tuni.fi/" target='blank'>Tampere University</a>
+      <a href="https://www.tuni.fi/" target="blank">
+        Tampere University
+      </a>
+      <div className="">
       <button id="infoButton" className="btn info-button" onClick={openModal}>
-          <FaInfoCircle className='info-icon'/> {/* Using React Icon */}
-        </button>
+        <FaInfoCircle className="info-icon" />
+      </button>
+      <button id="lang-toggle" className="btn lang-toggle" onClick={toggleLanguage}>
+        {language}
+      </button>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Sidebar from './components/Sidebar';
 import Chatbox from './components/Chatbox';
 import TopBar from './components/TopBar';
@@ -6,8 +6,11 @@ import Modal from './components/Modal';
 import axios from 'axios';
 import './App.css';
 import PermissionModal from './components/PermissionModal';
+import { LanguageContext } from "./context/Language";
 
 function App() {
+  const { language } = useContext(LanguageContext);
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -52,7 +55,7 @@ function App() {
     setMessages((prev) => [...prev, newMessage]);
 
     try {
-      const response = await axios.post(`${api_url}/api/query`, { query: input });
+      const response = await axios.post(`${api_url}/api/query`, { query: input, language });
       const botMessage = { role: 'bot', content: response.data.answer };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {

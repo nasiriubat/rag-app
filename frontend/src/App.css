@@ -4,7 +4,7 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  height: min(100vh, 100dvh);
 }
 
 .main {
@@ -118,7 +118,7 @@ body {
 
 /* Main Content */
 #main-content {
-  height: 100vh !important;
+  height: min(100vh, 100dvh) !important;
   width: 100%;
 
 
@@ -157,7 +157,8 @@ body {
   background-color: #ffffff;
   border-radius: 15px;
   padding: 20px;
-  height: 76vh;
+  height: min(74vh, 74dvh) !important;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -470,7 +471,6 @@ body {
   }
   .chat-area .message {
     max-width: 90%;
-    overflow-x: clip;
   }
   #sidebar .logo button {
     
@@ -480,6 +480,7 @@ body {
 }
 
 @media (max-width: 425px) {
+  
   #sidebar h4 {
     font-size: 1.1rem;
   }
@@ -507,7 +508,7 @@ body {
 @media (max-width: 375px) {
  
   .top-bar a {
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
   
 }
@@ -540,4 +541,18 @@ body {
 @keyframes fadeInOut {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
+}
+.lang-toggle {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lang-toggle:hover {
+  background-color: #0056b3;
 }

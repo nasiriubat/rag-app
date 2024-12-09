@@ -12,7 +12,8 @@ const router = express.Router();
 
 // Query Endpoint
 router.post("/query", async (req, res) => {
-  const { query } = req.body;
+  const { query, language } = req.body;
+  const lang = language == 'EN' ? 'English' : 'Finnish';
   if (!query) {
     return res.status(400).json({ error: "Query is required." });
   }
@@ -24,43 +25,44 @@ router.post("/query", async (req, res) => {
     const similarDocuments = await findSimilarDocuments(queryEmbedding);
     const context = similarDocuments.map((doc) => doc.content).join("\n");
     // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n' \n\n Answer:`;
-    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Answer the query in the same language as it is asked. Be concise and relevant and start direct answer. If no answer found based on given context then return 'No results found for this query.'.`;
+    // const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Language should be ${lang}. Be concise and relevant and start direct answer. If no answer found based on given context then return 'No results found for this query.'.`;
+    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Language should be ${lang}. Be concise and relevant and start direct answer.`;
 
     let answer = await openaiResponse(prompt);
-    if (answer == "No results found for this query.") {
-      const existingAnswer = await queryDatabase(
-        "SELECT answer FROM questions WHERE question = ?",
-        [query]
-      );
+    // if (answer == "No results found for this query.") {
+    //   const existingAnswer = await queryDatabase(
+    //     "SELECT answer FROM questions WHERE question = ?",
+    //     [query]
+    //   );
 
-      if (existingAnswer.length > 0) {
-        if (existingAnswer[0].answer.includes('provided text') || existingAnswer[0].answer.includes('hyvä olla') || existingAnswer[0].answer.includes('There is no information')) {
-          const { bprompt, blinksHtml } = await browserResponse(query);
-          answer = await openaiResponse(bprompt);
-          answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
-          // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-        } else {
-          console.log('existing answer has solid answer');
-          answer = existingAnswer[0].answer;
-        }
-      } else {
-        // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-        console.log('existing answer not found');
-        const { bprompt, blinksHtml } = await browserResponse(query);
-        answer = await openaiResponse(bprompt);
-        answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
+    //   if (existingAnswer.length > 0) {
+    //     if (existingAnswer[0].answer.includes('provided text') || existingAnswer[0].answer.includes('hyvä olla') || existingAnswer[0].answer.includes('There is no information')) {
+    //       const { bprompt, blinksHtml } = await browserResponse(query);
+    //       answer = await openaiResponse(bprompt);
+    //       answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
+    //       // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+    //     } else {
+    //       console.log('existing answer has solid answer');
+    //       answer = existingAnswer[0].answer;
+    //     }
+    //   } else {
+    //     // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+    //     console.log('existing answer not found');
+    //     const { bprompt, blinksHtml } = await browserResponse(query);
+    //     answer = await openaiResponse(bprompt);
+    //     answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
 
-      }
+    //   }
 
-    } else {
-      // Concatenate URLs of matched documents with the answer
-      const links = similarDocuments
-        .map((doc) => `<a href="${doc.url}" target="_blank">- ${doc.url}</a>`)
-        .join("<br>");
-      answer = `${answer}<br><br>For more details, visit:<br>${links}`;
+    // } else {
+    // Concatenate URLs of matched documents with the answer
+    const links = similarDocuments
+      .map((doc) => `<a href="${doc.url}" target="_blank">- ${doc.url}</a>`)
+      .join("<br>");
+    answer = `${answer}<br><br>For more details, visit:<br>${links}`;
 
-      // Save or update the answer in the database
-    }
+    // }
+    // Save or update the answer in the database
     await saveOrUpdateAnswer(query, answer);
 
     res.json({ answer });

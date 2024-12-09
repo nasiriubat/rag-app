@@ -6,6 +6,7 @@ const { generateEmbedding } = require("../utils/embedding");
 const { findSimilarDocuments, generateResponseFromContext } = require("../utils/responseManager");
 const { queryDatabase, runDatabase } = require("../models/database");
 const openaiResponse = require("../utils/openaiResponse");
+const browserResponse = require("../utils/browserResponse");
 
 const router = express.Router();
 
@@ -17,68 +18,50 @@ router.post("/query", async (req, res) => {
   }
 
   try {
-    // Step 1: Generate embedding for the query
     const queryEmbedding = await generateEmbedding(query);
     if (!queryEmbedding) throw new Error("Failed to generate query embedding.");
 
-    // Step 2: Find similar documents
     const similarDocuments = await findSimilarDocuments(queryEmbedding);
-    // Step 3: Generate context from similar documents
     const context = similarDocuments.map((doc) => doc.content).join("\n");
-    // Step 4: Generate response from OpenAI
     // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n' \n\n Answer:`;
-    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Answer the query in the same language as it is asked. Be concise and relevant and start direct answer..`;
-
-    // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n Answer:`;
+    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Answer the query in the same language as it is asked. Be concise and relevant and start direct answer. If no answer found based on given context then return 'No results found for this query.'.`;
 
     let answer = await openaiResponse(prompt);
-    // Step 5: Handle OpenAI "No results" response
-    // if (answer == "No results found for this query.") {
-    //   const existingAnswer = await queryDatabase(
-    //     "SELECT answer FROM questions WHERE question = ?",
-    //     [query]
-    //   );
+    if (answer == "No results found for this query.") {
+      const existingAnswer = await queryDatabase(
+        "SELECT answer FROM questions WHERE question = ?",
+        [query]
+      );
 
-    //   if (existingAnswer.length > 0) {
-    //     if (existingAnswer[0].answer.includes('provided text')) {
-    //       answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-    //     } else {
-    //       answer = existingAnswer[0].answer;
-    //     }
+      if (existingAnswer.length > 0) {
+        if (existingAnswer[0].answer.includes('provided text') || existingAnswer[0].answer.includes('hyvä olla') || existingAnswer[0].answer.includes('There is no information')) {
+          const { bprompt, blinksHtml } = await browserResponse(query);
+          answer = await openaiResponse(bprompt);
+          answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
+          // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+        } else {
+          console.log('existing answer has solid answer');
+          answer = existingAnswer[0].answer;
+        }
+      } else {
+        // answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+        console.log('existing answer not found');
+        const { bprompt, blinksHtml } = await browserResponse(query);
+        answer = await openaiResponse(bprompt);
+        answer = `${answer}<br><br>For more details, visit:<br>${blinksHtml}`;
 
-    //     // Use the existing answer
-    //   } else {
-    //     // Handle case where no existing answer is found
-    //     answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-    //   }
+      }
 
-    // } else {
+    } else {
       // Concatenate URLs of matched documents with the answer
       const links = similarDocuments
         .map((doc) => `<a href="${doc.url}" target="_blank">- ${doc.url}</a>`)
         .join("<br>");
       answer = `${answer}<br><br>For more details, visit:<br>${links}`;
 
-      // Save/update the response for this question
-      const existingQuestion = await queryDatabase(
-        "SELECT id FROM questions WHERE question = ?",
-        [query]
-      );
-
-      if (existingQuestion.length > 0) {
-        // Update existing record
-        await runDatabase(
-          "UPDATE questions SET answer = ?, count = count + 1 WHERE id = ?",
-          [answer, existingQuestion[0].id]
-        );
-      } else {
-        // Insert new record
-        await runDatabase(
-          "INSERT INTO questions (question, answer, count) VALUES (?, ?, ?)",
-          [query, answer, 1]
-        );
-      }
-    // }
+      // Save or update the answer in the database
+    }
+    await saveOrUpdateAnswer(query, answer);
 
     res.json({ answer });
   } catch (error) {
@@ -87,6 +70,31 @@ router.post("/query", async (req, res) => {
   }
 });
 
+async function saveOrUpdateAnswer(query, answer) {
+  try {
+    const existingQuestion = await queryDatabase(
+      "SELECT id FROM questions WHERE question = ?",
+      [query]
+    );
+
+    if (existingQuestion.length > 0) {
+      // Update existing record
+      await runDatabase(
+        "UPDATE questions SET answer = ?, count = count + 1 WHERE id = ?",
+        [answer, existingQuestion[0].id]
+      );
+    } else {
+      // Insert new record
+      await runDatabase(
+        "INSERT INTO questions (question, answer, count) VALUES (?, ?, ?)",
+        [query, answer, 1]
+      );
+    }
+  } catch (error) {
+    console.error("Error saving or updating answer:", error.message);
+    throw error;
+  }
+}
 
 
 // Feed Multiple URLs Endpoint

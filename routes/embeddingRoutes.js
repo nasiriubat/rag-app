@@ -25,33 +25,34 @@ router.post("/query", async (req, res) => {
     const similarDocuments = await findSimilarDocuments(queryEmbedding);
     // Step 3: Generate context from similar documents
     const context = similarDocuments.map((doc) => doc.content).join("\n");
-
     // Step 4: Generate response from OpenAI
-    const prompt = `Context: ${context}  \n\n Query: ${query} \n\n Note: If you don't know the answer, then say 'No results found for this query.' \n\n Answer:`;
+    // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n' \n\n Answer:`;
+    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Answer the query in the same language as it is asked. Be concise and relevant and start direct answer..`;
+
     // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n Answer:`;
 
     let answer = await openaiResponse(prompt);
     // Step 5: Handle OpenAI "No results" response
-    if (answer == "No results found for this query.") {
-      const existingAnswer = await queryDatabase(
-        "SELECT answer FROM questions WHERE question = ?",
-        [query]
-      );
+    // if (answer == "No results found for this query.") {
+    //   const existingAnswer = await queryDatabase(
+    //     "SELECT answer FROM questions WHERE question = ?",
+    //     [query]
+    //   );
 
-      if (existingAnswer.length > 0) {
-        if (existingAnswer[0].answer.includes('provided text')) {
-          answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-        } else {
-          answer = existingAnswer[0].answer;
-        }
+    //   if (existingAnswer.length > 0) {
+    //     if (existingAnswer[0].answer.includes('provided text')) {
+    //       answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+    //     } else {
+    //       answer = existingAnswer[0].answer;
+    //     }
 
-        // Use the existing answer
-      } else {
-        // Handle case where no existing answer is found
-        answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
-      }
+    //     // Use the existing answer
+    //   } else {
+    //     // Handle case where no existing answer is found
+    //     answer = `No specific details found. May be this will help: <a style='word-wrap: break-word;' href="https://www.google.com/search?q=${query} at Tampere University" target="_blank">Link</a>`;
+    //   }
 
-    } else {
+    // } else {
       // Concatenate URLs of matched documents with the answer
       const links = similarDocuments
         .map((doc) => `<a href="${doc.url}" target="_blank">- ${doc.url}</a>`)
@@ -77,7 +78,7 @@ router.post("/query", async (req, res) => {
           [query, answer, 1]
         );
       }
-    }
+    // }
 
     res.json({ answer });
   } catch (error) {
@@ -90,141 +91,142 @@ router.post("/query", async (req, res) => {
 
 // Feed Multiple URLs Endpoint
 
-router.get("/feed-url-list", async (req, res) => {
-  const filePath = path.join(__dirname, "../allUnique.txt");
+// router.get("/feed-url-list", async (req, res) => {
+//   // const filePath = path.join(__dirname, "../allUnique.txt");
+//   const filePath = path.join(__dirname, "../peopleUrls.txt");
 
-  // Check if the file exists
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: "allUnique.txt file not found." });
-  }
+//   // Check if the file exists
+//   if (!fs.existsSync(filePath)) {
+//     return res.status(404).json({ error: "txt file not found." });
+//   }
 
-  try {
-    // Read URLs from the file
-    const urls = fs.readFileSync(filePath, "utf8").split("\n").filter(Boolean);
+//   try {
+//     // Read URLs from the file
+//     const urls = fs.readFileSync(filePath, "utf8").split("\n").filter(Boolean);
 
-    if (urls.length === 0) {
-      return res.status(400).json({ error: "No URLs found in allUnique.txt file." });
-    }
+//     if (urls.length === 0) {
+//       return res.status(400).json({ error: "No URLs found in txt file." });
+//     }
 
-    const successUrls = [];
-    const failedUrls = [];
-    let i = 1;
-    for (const url of urls) {
-      console.log(i);
-      i++;
-      try {
-        const content = await scrapeContent(url);
+//     const successUrls = [];
+//     const failedUrls = [];
+//     let i = 1;
+//     for (const url of urls) {
+//       console.log(i);
+//       i++;
+//       try {
+//         const content = await scrapeContent(url);
 
-        if (!content) {
-          failedUrls.push(url);
-          continue;
-        }
+//         if (!content) {
+//           failedUrls.push(url);
+//           continue;
+//         }
 
-        const embedding = await generateEmbedding(content);
+//         const embedding = await generateEmbedding(content);
 
-        if (!embedding) {
-          failedUrls.push(url);
-          continue;
-        }
+//         if (!embedding) {
+//           failedUrls.push(url);
+//           continue;
+//         }
 
-        // Check if the URL already exists
-        const existingDocument = await queryDatabase(
-          "SELECT id FROM documents WHERE url = ?",
-          [url]
-        );
+//         // Check if the URL already exists
+//         const existingDocument = await queryDatabase(
+//           "SELECT id FROM documents WHERE url = ?",
+//           [url]
+//         );
 
-        if (existingDocument.length > 0) {
-          // Update the existing document
-          await runDatabase(
-            "UPDATE documents SET content = ?, embedding = ? WHERE url = ?",
-            [content, JSON.stringify(embedding), url]
-          );
-        } else {
-          // Insert a new document
-          await runDatabase(
-            "INSERT INTO documents (url, content, embedding) VALUES (?, ?, ?)",
-            [url, content, JSON.stringify(embedding)]
-          );
-        }
+//         if (existingDocument.length > 0) {
+//           // Update the existing document
+//           await runDatabase(
+//             "UPDATE documents SET content = ?, embedding = ? WHERE url = ?",
+//             [content, JSON.stringify(embedding), url]
+//           );
+//         } else {
+//           // Insert a new document
+//           await runDatabase(
+//             "INSERT INTO documents (url, content, embedding) VALUES (?, ?, ?)",
+//             [url, content, JSON.stringify(embedding)]
+//           );
+//         }
 
-        successUrls.push(url);
-      } catch (error) {
-        console.error(`Error processing URL (${url}):`, error.message);
-        failedUrls.push(url);
-      }
-    }
+//         successUrls.push(url);
+//       } catch (error) {
+//         console.error(`Error processing URL (${url}):`, error.message);
+//         failedUrls.push(url);
+//       }
+//     }
 
-    // Write the successful URLs to a file
-    const todayDate = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
-    const successFilePath = path.join(__dirname, `../success-${todayDate}.txt`);
-    const failedFilePath = path.join(__dirname, `../failed-${todayDate}.txt`);
-
-
-    fs.writeFileSync(successFilePath, successUrls.join("\n"), "utf8");
-    fs.writeFileSync(failedFilePath, failedUrls.join("\n"), "utf8");
-
-    res.json({
-      message: "URLs processed.",
-      total: urls.length,
-      successCount: successUrls.length,
-      failedCount: failedUrls.length
-    });
-  } catch (error) {
-    console.error("Error processing URL list:", error.message);
-    res.status(500).json({ error: "Failed to process URL list." });
-  }
-});
+//     // Write the successful URLs to a file
+//     const todayDate = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+//     const successFilePath = path.join(__dirname, `../success-people-${todayDate}.txt`);
+//     const failedFilePath = path.join(__dirname, `../failed-people-${todayDate}.txt`);
 
 
-// Feed Single URL Endpoint
-router.post("/feed-single-url", async (req, res) => {
-  const { url } = req.body;
+//     fs.writeFileSync(successFilePath, successUrls.join("\n"), "utf8");
+//     fs.writeFileSync(failedFilePath, failedUrls.join("\n"), "utf8");
 
-  if (!url) {
-    return res.status(400).json({ error: "URL is required." });
-  }
+//     res.json({
+//       message: "URLs processed.",
+//       total: urls.length,
+//       successCount: successUrls.length,
+//       failedCount: failedUrls.length
+//     });
+//   } catch (error) {
+//     console.error("Error processing URL list:", error.message);
+//     res.status(500).json({ error: "Failed to process URL list." });
+//   }
+// });
 
-  try {
-    const content = await scrapeContent(url);
 
-    if (!content) {
-      return res.status(400).json({ error: "Failed to scrape content from the URL." });
-    }
+// // Feed Single URL Endpoint
+// router.post("/feed-single-url", async (req, res) => {
+//   const { url } = req.body;
 
-    const embedding = await generateEmbedding(content);
+//   if (!url) {
+//     return res.status(400).json({ error: "URL is required." });
+//   }
 
-    if (!embedding) {
-      return res.status(500).json({ error: "Failed to generate embedding for the content." });
-    }
+//   try {
+//     const content = await scrapeContent(url);
 
-    // Check if the URL already exists
-    const existingDocument = await queryDatabase(
-      "SELECT id FROM documents WHERE url = ?",
-      [url]
-    );
+//     if (!content) {
+//       return res.status(400).json({ error: "Failed to scrape content from the URL." });
+//     }
 
-    if (existingDocument.length > 0) {
-      // Update the existing document
-      await runDatabase(
-        "UPDATE documents SET content = ?, embedding = ? WHERE url = ?",
-        [content, JSON.stringify(embedding), url]
-      );
+//     const embedding = await generateEmbedding(content);
 
-      res.json({ message: "URL content and embedding updated successfully." });
-    } else {
-      // Insert a new document
-      await runDatabase(
-        "INSERT INTO documents (url, content, embedding) VALUES (?, ?, ?)",
-        [url, content, JSON.stringify(embedding)]
-      );
+//     if (!embedding) {
+//       return res.status(500).json({ error: "Failed to generate embedding for the content." });
+//     }
 
-      res.json({ message: "URL processed and saved successfully." });
-    }
-  } catch (error) {
-    console.error("Error processing single URL:", error.message);
-    res.status(500).json({ error: "Failed to process URL." });
-  }
-});
+//     // Check if the URL already exists
+//     const existingDocument = await queryDatabase(
+//       "SELECT id FROM documents WHERE url = ?",
+//       [url]
+//     );
+
+//     if (existingDocument.length > 0) {
+//       // Update the existing document
+//       await runDatabase(
+//         "UPDATE documents SET content = ?, embedding = ? WHERE url = ?",
+//         [content, JSON.stringify(embedding), url]
+//       );
+
+//       res.json({ message: "URL content and embedding updated successfully." });
+//     } else {
+//       // Insert a new document
+//       await runDatabase(
+//         "INSERT INTO documents (url, content, embedding) VALUES (?, ?, ?)",
+//         [url, content, JSON.stringify(embedding)]
+//       );
+
+//       res.json({ message: "URL processed and saved successfully." });
+//     }
+//   } catch (error) {
+//     console.error("Error processing single URL:", error.message);
+//     res.status(500).json({ error: "Failed to process URL." });
+//   }
+// });
 
 
 // Top Questions Endpoint
@@ -238,6 +240,29 @@ router.get("/top-questions", async (req, res) => {
   } catch (error) {
     console.error("Error fetching top questions:", error.message);
     res.status(500).json({ error: "Failed to fetch top questions." });
+  }
+});
+
+// /report Endpoint
+router.get("/report", async (req, res) => {
+  try {
+    // Fetch all questions and answers from the database
+    const data = await queryDatabase("SELECT question, answer FROM questions");
+
+    // Format the data into a string for the .txt file
+    const reportContent = data
+      .map((row, index) => `Q${index + 1}: ${row.question}\nA${index + 1}: ${row.answer}\n\n`)
+      .join("");
+
+    // Set headers for file download
+    res.setHeader("Content-Disposition", "attachment; filename=questions_report.txt");
+    res.setHeader("Content-Type", "text/plain");
+
+    // Send the file content directly to the client
+    res.send(reportContent);
+  } catch (error) {
+    console.error("Error generating report:", error.message);
+    res.status(500).json({ error: "Failed to generate report." });
   }
 });
 

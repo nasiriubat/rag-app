@@ -17,9 +17,9 @@ function TopBar({ openModal, toggleSidebar }) {
       <button id="infoButton" className="btn info-button" onClick={openModal}>
         <FaInfoCircle className="info-icon" />
       </button>
-      <button id="lang-toggle" className="btn lang-toggle" onClick={toggleLanguage}>
+      {/* <button id="lang-toggle" className="btn lang-toggle" onClick={toggleLanguage}>
         {language}
-      </button>
+      </button> */}
       </div>
     </div>
   );

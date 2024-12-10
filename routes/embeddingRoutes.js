@@ -13,10 +13,13 @@ const router = express.Router();
 // Query Endpoint
 router.post("/query", async (req, res) => {
   const { query, language } = req.body;
-  const lang = language == 'EN' ? 'English' : 'Finnish';
+  // const lang = language == 'EN' ? 'English' : 'Finnish';
   if (!query) {
     return res.status(400).json({ error: "Query is required." });
   }
+
+  const lang = await openaiResponse(`what is the language of the following : \n\n '${query}.'`);
+  
 
   try {
     const queryEmbedding = await generateEmbedding(query);
@@ -26,7 +29,7 @@ router.post("/query", async (req, res) => {
     const context = similarDocuments.map((doc) => doc.content).join("\n");
     // const prompt = `Context: ${context}  \n\n Query: ${query} \n\n' \n\n Answer:`;
     // const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Language should be ${lang}. Be concise and relevant and start direct answer. If no answer found based on given context then return 'No results found for this query.'.`;
-    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Language should be ${lang}. Be concise and relevant and start direct answer.`;
+    const prompt = `Context: ${context} \n\n Query: ${query} \n\n Answer: \n\n Instructions: Answer in  ${lang} and in 80 words. Be concise and relevant and start direct answer.`;
 
     let answer = await openaiResponse(prompt);
     // if (answer == "No results found for this query.") {

@@ -20,6 +20,7 @@ function App() {
 
   const api_url = 'http://localhost:5000';
   // const api_url = 'https://rag-app-iivc.onrender.com';
+  // const api_url = 'https://gptlab.rd.tuni.fi/GPT-Lab/demos/rag-app';
 
   useEffect(() => {
     // Fetch FAQs when the component mounts

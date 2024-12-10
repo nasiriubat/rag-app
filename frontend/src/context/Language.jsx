@@ -9,7 +9,8 @@ export const LanguageProvider = ({ children }) => {
 
   // Load language from localStorage on mount
   useEffect(() => {
-    const storedLanguage = localStorage.getItem("language") || "EN";
+    // const storedLanguage = localStorage.getItem("language") || "EN";
+    const storedLanguage =  "EN";
     setLanguage(storedLanguage);
   }, []);
 
